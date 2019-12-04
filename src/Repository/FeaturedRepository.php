@@ -22,15 +22,16 @@ class FeaturedRepository extends ServiceEntityRepository
     parent::__construct($managerRegistry, FeaturedProgram::class);
   }
 
-  /**
-   * @param      $flavor
-   * @param int  $limit
-   * @param int  $offset
-   * @param bool $for_ios
-   *
-   * @return mixed
-   */
-  public function getFeaturedPrograms($flavor, $limit = 20, $offset = 0, $for_ios = false)
+    /**
+     * @param      $flavor
+     * @param int $limit
+     * @param int $offset
+     * @param bool $for_ios
+     * @param int $max_version
+     *
+     * @return mixed
+     */
+  public function getFeaturedPrograms($flavor, $limit = 20, $offset = 0, $for_ios = false, $max_version = 0)
   {
     $qb = $this->createQueryBuilder('e');
 
@@ -45,19 +46,28 @@ class FeaturedRepository extends ServiceEntityRepository
       ->setFirstResult($offset)
       ->setMaxResults($limit);
 
+    if ($max_version !== 0)
+    {
+        $qb
+            ->andWhere($qb
+                ->expr()->lte('e.language_version', ':max_version'))
+            ->setParameter('max_version', $max_version);
+    }
+
     $qb->orderBy('e.priority', 'DESC');
 
     return $qb->getQuery()->getResult();
   }
 
-  /**
-   * @param      $flavor
-   * @param bool $for_ios
-   *
-   * @return mixed
-   * @throws \Doctrine\ORM\NonUniqueResultException
-   */
-  public function getFeaturedProgramCount($flavor, $for_ios = false)
+    /**
+     * @param      $flavor
+     * @param bool $for_ios
+     * @param int $max_version
+     *
+     * @return mixed
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+  public function getFeaturedProgramCount($flavor, $for_ios = false, $max_version = 0)
   {
     $qb = $this->createQueryBuilder('e');
 
@@ -69,6 +79,14 @@ class FeaturedRepository extends ServiceEntityRepository
       ->andWhere($qb->expr()->eq('e.for_ios', ':for_ios'))
       ->setParameter('flavor', $flavor)
       ->setParameter('for_ios', $for_ios);
+
+    if ($max_version !== 0)
+    {
+        $qb
+            ->andWhere($qb
+                ->expr()->lte('e.language_version', ':max_version'))
+            ->setParameter('max_version', $max_version);
+    }
 
     return $qb->getQuery()->getSingleScalarResult();
   }

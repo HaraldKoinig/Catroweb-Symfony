@@ -193,10 +193,11 @@ class ListProgramsController extends AbstractController
     $limit = intval($request->get('limit', 20));
     $offset = intval($request->get('offset', 0));
     $user_id = $request->get('user_id', 0);
+    $max_version = $request->query->get('max_version', 0);
 
     if ($sortBy == 'downloads')
     {
-      $programs = $this->program_manager->getMostDownloadedPrograms($flavor, $limit, $offset);
+      $programs = $this->program_manager->getMostDownloadedPrograms($flavor, $limit, $offset, $max_version);
 
       $count = count($programs);
       if ($count != $limit && $flavor)
@@ -204,13 +205,13 @@ class ListProgramsController extends AbstractController
         $flavor_count = $this->program_manager->getTotalPrograms($flavor);
         $new_offset = max($offset - $flavor_count + $count, 0);
         $programs = array_merge($programs, $this->program_manager->getMostDownloadedPrograms(
-          '!' . $flavor, $limit - $count, $new_offset
+          '!' . $flavor, $limit - $count, $new_offset, $max_version
         ));
       }
     }
     elseif ($sortBy == 'views')
     {
-      $programs = $this->program_manager->getMostViewedPrograms($flavor, $limit, $offset);
+      $programs = $this->program_manager->getMostViewedPrograms($flavor, $limit, $offset, $max_version);
 
       $count = count($programs);
       if ($count != $limit && $flavor)
@@ -218,7 +219,7 @@ class ListProgramsController extends AbstractController
         $flavor_count = $this->program_manager->getTotalPrograms($flavor);
         $new_offset = max($offset - $flavor_count + $count, 0);
         $programs = array_merge($programs, $this->program_manager->getMostViewedPrograms(
-          '!' . $flavor, $limit - $count, $new_offset
+          '!' . $flavor, $limit - $count, $new_offset, $max_version
         ));
       }
     }
@@ -247,7 +248,7 @@ class ListProgramsController extends AbstractController
     }
     else
     {
-      $programs = $this->program_manager->getRecentPrograms($flavor, $limit, $offset);
+      $programs = $this->program_manager->getRecentPrograms($flavor, $limit, $offset, $max_version);
 
       $count = count($programs);
       if ($count != $limit && $flavor)
@@ -255,7 +256,7 @@ class ListProgramsController extends AbstractController
         $flavor_count = $this->program_manager->getTotalPrograms($flavor);
         $new_offset = max($offset - $flavor_count + $count, 0);
         $programs = array_merge($programs, $this->program_manager->getRecentPrograms(
-          '!' . $flavor, $limit - $count, $new_offset
+          '!' . $flavor, $limit - $count, $new_offset, $max_version
         ));
       }
     }

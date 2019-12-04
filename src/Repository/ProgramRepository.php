@@ -39,16 +39,17 @@ class ProgramRepository extends ServiceEntityRepository
    */
   private $cached_most_downloaded_other_programs_full_result = [];
 
-  /**
-   * @param bool        $debug_build If debug builds should be included
-   * @param string|null $flavor
-   * @param int|null    $limit
-   * @param int         $offset
-   *
-   * @return Program[]
-   */
+    /**
+     * @param bool $debug_build If debug builds should be included
+     * @param string|null $flavor
+     * @param int|null $limit
+     * @param int $offset
+     * @param int $max_version
+     *
+     * @return Program[]
+     */
   public function getMostDownloadedPrograms(bool $debug_build, $flavor = null,
-  $limit = 20, $offset = 0)
+  $limit = 20, $offset = 0, $max_version = 0)
   {
     $query_builder = $this->createQueryBuilder('e');
 
@@ -59,22 +60,31 @@ class ProgramRepository extends ServiceEntityRepository
       ->setFirstResult($offset)
       ->setMaxResults($limit);
 
+      if ($max_version !== 0)
+      {
+        $query_builder
+            ->andWhere($query_builder
+                ->expr()->lte('e.language_version', ':max_version'))
+            ->setParameter('max_version', $max_version);
+      }
+
     $query_builder = $this->addDebugBuildCondition($query_builder, $debug_build, 'e');
     $query_builder = $this->addFlavorCondition($query_builder, $flavor);
 
     return $query_builder->getQuery()->getResult();
   }
 
-  /**
-   * @param bool        $debug_build If debug builds should be included
-   * @param string|null $flavor
-   * @param int|null    $limit
-   * @param int         $offset
-   *
-   * @return Program[]
-   */
+    /**
+     * @param bool $debug_build If debug builds should be included
+     * @param string|null $flavor
+     * @param int|null $limit
+     * @param int $offset
+     * @param int $max_version
+     *
+     * @return Program[]
+     */
   public function getMostViewedPrograms(bool $debug_build, $flavor = null,
-  $limit = 20, $offset = 0)
+  $limit = 20, $offset = 0, $max_version = 0)
   {
     $query_builder = $this->createQueryBuilder('e');
 
@@ -85,6 +95,14 @@ class ProgramRepository extends ServiceEntityRepository
       ->orderBy('e.views', 'DESC')
       ->setFirstResult($offset)
       ->setMaxResults($limit);
+
+    if ($max_version !== 0)
+    {
+        $query_builder
+            ->andWhere($query_builder
+                ->expr()->lte('e.language_version', ':max_version'))
+            ->setParameter('max_version', $max_version);
+    }
 
     $query_builder = $this->addDebugBuildCondition($query_builder, $debug_build, 'e');
     $query_builder = $this->addFlavorCondition($query_builder, $flavor);
@@ -387,15 +405,16 @@ class ProgramRepository extends ServiceEntityRepository
     return count($this->cached_most_downloaded_other_programs_full_result[$cache_key]);
   }
 
-  /**
-   * @param bool        $debug_build If debug builds should be included
-   * @param string|null $flavor
-   * @param int|null    $limit
-   * @param int         $offset
-   *
-   * @return Program[]
-   */
-  public function getRecentPrograms(bool $debug_build, $flavor = null, $limit = 20, $offset = 0)
+    /**
+     * @param bool $debug_build If debug builds should be included
+     * @param string|null $flavor
+     * @param int|null $limit
+     * @param int $offset
+     * @param int $max_version
+     *
+     * @return Program[]
+     */
+  public function getRecentPrograms(bool $debug_build, $flavor = null, $limit = 20, $offset = 0, $max_version = 0)
   {
     $query_builder = $this->createQueryBuilder('e');
 
@@ -411,50 +430,21 @@ class ProgramRepository extends ServiceEntityRepository
       ->setParameter('flavor', $flavor)
       ->setMaxResults($limit);
 
+    if ($max_version !== 0)
+    {
+        $query_builder
+            ->andWhere($query_builder
+                ->expr()->lte('e.language_version', ':max_version'))
+            ->setParameter('max_version', $max_version);
+    }
+
     $query_builder = $this->addDebugBuildCondition($query_builder, $debug_build, 'e');
 
 
     return $query_builder->getQuery()->getResult();
   }
 
-  /**
-   * @param bool        $debug_build If debug builds should be included
-   * @param string|null $flavor
-   * @param int|null    $limit
-   * @param int         $offset
-   *
-   * @return array
-   */
-  public function getRandomPrograms(bool $debug_build, $flavor = null, $limit = 20, $offset = 0)
-  {
-    // Rand(), newid() and TABLESAMPLE() doesn't exist in the Native Query
-    // therefore we have to do a workaround for random results
-    if ($offset > 0 && isset($_SESSION['randomProgramIds']))
-    {
-      $array_program_ids = $_SESSION['randomProgramIds'];
-    }
-    else
-    {
-      $array_program_ids = $this->getVisibleProgramIds($flavor, $debug_build);
-      shuffle($array_program_ids);
-      $_SESSION['randomProgramIds'] = $array_program_ids;
-    }
-
-    $array_programs = [];
-    $max_element = ($offset + $limit) > count($array_program_ids) ?
-    count($array_program_ids) : $offset + $limit;
-    $current_element = $offset;
-
-    while ($current_element < $max_element)
-    {
-      $array_programs[] = $this->find($array_program_ids[$current_element]);
-      $current_element++;
-    }
-
-    return $array_programs;
-  }
-
-  /**
+    /**
    * @param string|null $flavor
    * @param bool        $debug_build If debug builds should be included
    *
@@ -477,7 +467,7 @@ class ProgramRepository extends ServiceEntityRepository
     return $query_builder->getQuery()->getResult();
   }
 
-  /**
+    /**
    * @param Program[]   $programs
    * @param bool        $debug_build If debug builds should be included
    *
@@ -507,7 +497,166 @@ class ProgramRepository extends ServiceEntityRepository
     return $filtered_programs;
   }
 
-  /**
+    /**
+     * @param string $query The query to search for (search terms)
+     * @param bool $debug_build If debug builds should be included
+     * @param int|null $limit
+     * @param int $offset
+     * @param int $max_version
+     *
+     * @return array
+     */
+    public function search(string $query, bool $debug_build, $limit = 10, $offset = 0, $max_version = 0)
+    {
+        $em = $this->getEntityManager();
+        $metadata = $em->getClassMetadata('App\Entity\Tag')->getFieldNames();
+        array_shift($metadata);
+
+        $debug_where = ($debug_build !== true) ? 'e.debug_build = false AND' : '';
+
+        $query_addition_for_tags = '';
+        $metadata_index = 0;
+        $metadata_count = count($metadata);
+
+        foreach ($metadata as $language)
+        {
+            if ($metadata_index === $metadata_count - 1)
+            {
+                $query_addition_for_tags .= '(t.' . $language . ' LIKE :searchterm)';
+            }
+            else
+            {
+                $query_addition_for_tags .= '(t.' . $language . ' LIKE :searchterm) OR ';
+            }
+            $metadata_index++;
+        }
+
+        $search_terms = explode(" ", $query);
+
+        $appendable_sql_string = '';
+        $more_than_one_search_term = false;
+
+        if (count($search_terms) > 1)
+        {
+
+            $appendable_sql_string = $this->getAppendableSqlStringForEveryTerm($search_terms,
+                $metadata, $debug_build);
+            $more_than_one_search_term = true;
+        }
+
+        $dql = 'SELECT e,
+          (CASE
+            WHEN (e.name LIKE :searchterm) THEN 10
+            ELSE 0
+          END) +
+          (CASE
+            WHEN (f.username LIKE :searchterm) THEN 1
+            ELSE 0
+          END) +
+          (CASE
+            WHEN (x.name LIKE :searchterm) THEN 7
+            ELSE 0
+          END) +
+          (CASE
+            WHEN (e.description LIKE :searchterm) THEN 3
+            ELSE 0
+          END) +
+          (CASE
+            WHEN (e.id = :searchtermint) THEN 11
+            ELSE 0
+          END) +
+          (CASE
+            WHEN (' . $query_addition_for_tags . ') THEN 7
+            ELSE 0
+          END)
+          AS weight
+        FROM App\Entity\Program e
+        LEFT JOIN e.user f
+        LEFT JOIN e.tags t
+        LEFT JOIN e.extensions x
+        WHERE
+          ((e.name LIKE :searchterm OR
+          f.username LIKE :searchterm OR
+          e.description LIKE :searchterm OR
+          x.name LIKE :searchterm OR ' .
+            $query_addition_for_tags . ' OR
+          e.id = :searchtermint) AND
+          e.visible = true AND ' .
+            $debug_where . '
+          e.private = false) ' . $appendable_sql_string;
+
+        if ($max_version !== 0)
+        {
+            $dql .= " AND e.language_version <= " . $max_version;
+        }
+
+        $dql .= " ORDER BY weight DESC, e.uploaded_at DESC";
+
+        $qb_program = $this->createQueryBuilder('e');
+        $final_query = $qb_program->getEntityManager()->createQuery($dql);
+        $final_query->setFirstResult($offset);
+        $final_query->setMaxResults($limit);
+        $final_query->setParameter('searchterm', '%' . $query . '%');
+        $final_query->setParameter('searchtermint', intval($query));
+        if ($more_than_one_search_term)
+        {
+            $parameter_index = 0;
+            foreach ($search_terms as $search_term)
+            {
+                $parameter = ":st" . $parameter_index;
+                $parameter_index++;
+                $final_query->setParameter($parameter, '%' . $search_term . '%');
+                $final_query->setParameter($parameter . 'int', intval($search_term));
+            }
+        }
+
+        $paginator = new Paginator($final_query);
+        $result = $paginator->getIterator()->getArrayCopy();
+
+        return array_map(function ($element)
+        {
+            return $element[0];
+        }, $result);
+    }
+
+    /**
+     * @param bool $debug_build If debug builds should be included
+     * @param string|null $flavor
+     * @param int|null $limit
+     * @param int $offset
+     *
+     * @return array
+     */
+    public function getRandomPrograms(bool $debug_build, $flavor = null, $limit = 20, $offset = 0)
+    {
+        // Rand(), newid() and TABLESAMPLE() doesn't exist in the Native Query
+        // therefore we have to do a workaround for random results
+        if ($offset > 0 && isset($_SESSION['randomProgramIds']))
+        {
+            $array_program_ids = $_SESSION['randomProgramIds'];
+        }
+        else
+        {
+            $array_program_ids = $this->getVisibleProgramIds($flavor, $debug_build);
+            shuffle($array_program_ids);
+            $_SESSION['randomProgramIds'] = $array_program_ids;
+        }
+
+        $array_programs = [];
+        $max_element = ($offset + $limit) > count($array_program_ids) ?
+            count($array_program_ids) : $offset + $limit;
+        $current_element = $offset;
+
+        while ($current_element < $max_element)
+        {
+            $array_programs[] = $this->find($array_program_ids[$current_element]);
+            $current_element++;
+        }
+
+        return $array_programs;
+    }
+
+    /**
    * @param int[] $program_ids
    *
    * @return int[]
@@ -533,7 +682,7 @@ class ProgramRepository extends ServiceEntityRepository
     }, $result);
   }
 
-  /**
+    /**
    * @param      $search_terms
    * @param      $metadata
    * @param bool $debug_build If debug builds should be included
@@ -582,129 +731,14 @@ class ProgramRepository extends ServiceEntityRepository
     return $sql;
   }
 
-  /**
-   * @param string   $query       The query to search for (search terms)
-   * @param bool     $debug_build If debug builds should be included
-   * @param int|null $limit
-   * @param int      $offset
-   *
-   * @return array
-   */
-  public function search(string $query, bool $debug_build, $limit = 10, $offset = 0)
-  {
-    $em = $this->getEntityManager();
-    $metadata = $em->getClassMetadata('App\Entity\Tag')->getFieldNames();
-    array_shift($metadata);
-
-    $debug_where = ($debug_build !== true) ? 'e.debug_build = false AND' : '';
-
-    $query_addition_for_tags = '';
-    $metadata_index = 0;
-    $metadata_count = count($metadata);
-
-    foreach ($metadata as $language)
-    {
-      if ($metadata_index === $metadata_count - 1)
-      {
-        $query_addition_for_tags .= '(t.' . $language . ' LIKE :searchterm)';
-      }
-      else
-      {
-        $query_addition_for_tags .= '(t.' . $language . ' LIKE :searchterm) OR ';
-      }
-      $metadata_index++;
-    }
-
-    $search_terms = explode(" ", $query);
-
-    $appendable_sql_string = '';
-    $more_than_one_search_term = false;
-
-    if (count($search_terms) > 1)
-    {
-
-      $appendable_sql_string = $this->getAppendableSqlStringForEveryTerm($search_terms,
-      $metadata, $debug_build);
-      $more_than_one_search_term = true;
-    }
-
-    $dql = 'SELECT e,
-          (CASE
-            WHEN (e.name LIKE :searchterm) THEN 10
-            ELSE 0
-          END) +
-          (CASE
-            WHEN (f.username LIKE :searchterm) THEN 1
-            ELSE 0
-          END) +
-          (CASE
-            WHEN (x.name LIKE :searchterm) THEN 7
-            ELSE 0
-          END) +
-          (CASE
-            WHEN (e.description LIKE :searchterm) THEN 3
-            ELSE 0
-          END) +
-          (CASE
-            WHEN (e.id = :searchtermint) THEN 11
-            ELSE 0
-          END) +
-          (CASE
-            WHEN (' . $query_addition_for_tags . ') THEN 7
-            ELSE 0
-          END)
-          AS weight
-        FROM App\Entity\Program e
-        LEFT JOIN e.user f
-        LEFT JOIN e.tags t
-        LEFT JOIN e.extensions x
-        WHERE
-          ((e.name LIKE :searchterm OR
-          f.username LIKE :searchterm OR
-          e.description LIKE :searchterm OR
-          x.name LIKE :searchterm OR ' .
-    $query_addition_for_tags . ' OR
-          e.id = :searchtermint) AND
-          e.visible = true AND ' .
-    $debug_where . '
-          e.private = false) ' . $appendable_sql_string;
-
-    $dql .= " ORDER BY weight DESC, e.uploaded_at DESC";
-
-    $qb_program = $this->createQueryBuilder('e');
-    $final_query = $qb_program->getEntityManager()->createQuery($dql);
-    $final_query->setFirstResult($offset);
-    $final_query->setMaxResults($limit);
-    $final_query->setParameter('searchterm', '%' . $query . '%');
-    $final_query->setParameter('searchtermint', intval($query));
-    if ($more_than_one_search_term)
-    {
-      $parameter_index = 0;
-      foreach ($search_terms as $search_term)
-      {
-        $parameter = ":st" . $parameter_index;
-        $parameter_index++;
-        $final_query->setParameter($parameter, '%' . $search_term . '%');
-        $final_query->setParameter($parameter . 'int', intval($search_term));
-      }
-    }
-
-    $paginator = new Paginator($final_query);
-    $result = $paginator->getIterator()->getArrayCopy();
-
-    return array_map(function ($element)
-    {
-      return $element[0];
-    }, $result);
-  }
-
-  /**
-   * @param string $query       The query to search for (search terms)
-   * @param bool   $debug_build If debug builds should be included
-   *
-   * @return int
-   */
-  public function searchCount(string $query, bool $debug_build)
+    /**
+     * @param string $query The query to search for (search terms)
+     * @param bool $debug_build If debug builds should be included
+     * @param int $max_version
+     *
+     * @return int
+     */
+  public function searchCount(string $query, bool $debug_build, $max_version = 0)
   {
     $em = $this->getEntityManager();
     $metadata = $em->getClassMetadata('App\Entity\Tag')->getFieldNames();
@@ -744,6 +778,11 @@ class ProgramRepository extends ServiceEntityRepository
           e.visible = true AND ' .
     $debug_where . '
           e.private = false) ' . $appendable_sql_string;
+
+    if ($max_version !== 0)
+    {
+        $dql .= " AND e.language_version <= " . $max_version;
+    }
 
     $dql .= " GROUP BY e.id";
     $db_query = $qb_program->getEntityManager()->createQuery($dql);

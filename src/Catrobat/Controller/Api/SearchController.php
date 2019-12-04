@@ -47,12 +47,13 @@ class SearchController extends AbstractController
 
     $limit = intval($request->query->get('limit', $this->DEFAULT_LIMIT));
     $offset = intval($request->query->get('offset', $this->DEFAULT_OFFSET));
+    $max_version = $request->query->get('max_version', 0);
 
-    $programs = $program_manager->search($query, $limit, $offset);
+    $programs = $program_manager->search($query, $limit, $offset, $max_version);
     // we can't count the results since we apply limit and offset.
     // so we indeed have to use a separate query that ignores
     // limit and offset to get the number of results.
-    $numbOfTotalProjects = $program_manager->searchCount($query);
+    $numbOfTotalProjects = $program_manager->searchCount($query, $max_version);
 
     return new ProgramListResponse($programs, $numbOfTotalProjects);
   }
@@ -100,4 +101,12 @@ class SearchController extends AbstractController
     return new ProgramListResponse($programs, $numbOfTotalProjects);
   }
 
+  private function checkProgramVersion($programs, $i, $max_version)
+  {
+      $program_version = $programs[$i]->getLanguageVersion();
+      if (version_compare($program_version, $max_version) > 0)
+      {
+          unset($programs[$i]);
+      }
+  }
 }

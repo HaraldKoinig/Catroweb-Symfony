@@ -716,6 +716,7 @@ class ApiFeatureContext extends BaseContext
         'catrobatversionname' => $programs[$i]['version'],
         'directory_hash'      => $programs[$i]['directory_hash'],
         'filesize'            => @$programs[$i]['FileSize'],
+        'language_version'    => $programs[$i]['language_version'],
         'visible'             => isset($programs[$i]['visible']) ? $programs[$i]['visible'] == 'true' : true,
         'approved'            => (isset($programs[$i]['approved_by_user']) && $programs[$i]['approved_by_user'] == '')
           ? null : true,
@@ -1273,7 +1274,7 @@ class ApiFeatureContext extends BaseContext
    */
   public function iShouldGetFollowingPrograms(TableNode $table)
   {
-
+      Assert:assertFalse(true, "not implemented");
   }
 
   /**

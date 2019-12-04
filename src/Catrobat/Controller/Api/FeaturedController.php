@@ -77,9 +77,10 @@ class FeaturedController extends AbstractController
 
     $limit = intval($request->query->get('limit', 20));
     $offset = intval($request->query->get('offset', 0));
+    $max_version = $request->query->get('max_version', 0);
 
-    $featured_programs = $repository->getFeaturedPrograms($flavor, $limit, $offset, $ios_only);
-    $numbOfTotalProjects = $repository->getFeaturedProgramCount($flavor, $ios_only);
+    $featured_programs = $repository->getFeaturedPrograms($flavor, $limit, $offset, $ios_only, $max_version);
+    $numbOfTotalProjects = $repository->getFeaturedProgramCount($flavor, $ios_only, $max_version);
 
     $retArray = [];
     $retArray['CatrobatProjects'] = [];
