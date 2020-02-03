@@ -193,7 +193,7 @@ class ListProgramsController extends AbstractController
     $limit = intval($request->get('limit', 20));
     $offset = intval($request->get('offset', 0));
     $user_id = $request->get('user_id', 0);
-    $max_version = $request->query->get('max_version', 0);
+    $max_version = $request->query->get('max_version', null);
 
     if ($sortBy == 'downloads')
     {

@@ -44,12 +44,12 @@ class ProgramRepository extends ServiceEntityRepository
      * @param string|null $flavor
      * @param int|null $limit
      * @param int $offset
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return Program[]
      */
   public function getMostDownloadedPrograms(bool $debug_build, $flavor = null,
-  $limit = 20, $offset = 0, $max_version = 0)
+  $limit = 20, $offset = 0, $max_version = null)
   {
     $query_builder = $this->createQueryBuilder('e');
 
@@ -60,7 +60,7 @@ class ProgramRepository extends ServiceEntityRepository
       ->setFirstResult($offset)
       ->setMaxResults($limit);
 
-      if ($max_version !== 0)
+      if ($max_version !== null)
       {
         $query_builder
             ->andWhere($query_builder
@@ -79,12 +79,12 @@ class ProgramRepository extends ServiceEntityRepository
      * @param string|null $flavor
      * @param int|null $limit
      * @param int $offset
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return Program[]
      */
   public function getMostViewedPrograms(bool $debug_build, $flavor = null,
-  $limit = 20, $offset = 0, $max_version = 0)
+  $limit = 20, $offset = 0, $max_version = null)
   {
     $query_builder = $this->createQueryBuilder('e');
 
@@ -96,7 +96,7 @@ class ProgramRepository extends ServiceEntityRepository
       ->setFirstResult($offset)
       ->setMaxResults($limit);
 
-    if ($max_version !== 0)
+    if ($max_version !== null)
     {
         $query_builder
             ->andWhere($query_builder
@@ -410,11 +410,11 @@ class ProgramRepository extends ServiceEntityRepository
      * @param string|null $flavor
      * @param int|null $limit
      * @param int $offset
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return Program[]
      */
-  public function getRecentPrograms(bool $debug_build, $flavor = null, $limit = 20, $offset = 0, $max_version = 0)
+  public function getRecentPrograms(bool $debug_build, $flavor = null, $limit = 20, $offset = 0, $max_version = null)
   {
     $query_builder = $this->createQueryBuilder('e');
 
@@ -430,7 +430,7 @@ class ProgramRepository extends ServiceEntityRepository
       ->setParameter('flavor', $flavor)
       ->setMaxResults($limit);
 
-    if ($max_version !== 0)
+    if ($max_version !== null)
     {
         $query_builder
             ->andWhere($query_builder
@@ -502,11 +502,11 @@ class ProgramRepository extends ServiceEntityRepository
      * @param bool $debug_build If debug builds should be included
      * @param int|null $limit
      * @param int $offset
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return array
      */
-    public function search(string $query, bool $debug_build, $limit = 10, $offset = 0, $max_version = 0)
+    public function search(string $query, bool $debug_build, $limit = 10, $offset = 0, $max_version = null)
     {
         $em = $this->getEntityManager();
         $metadata = $em->getClassMetadata('App\Entity\Tag')->getFieldNames();
@@ -585,7 +585,7 @@ class ProgramRepository extends ServiceEntityRepository
             $debug_where . '
           e.private = false) ' . $appendable_sql_string;
 
-        if ($max_version !== 0)
+        if ($max_version !== null)
         {
             $dql .= " AND e.language_version <= " . $max_version;
         }
@@ -734,11 +734,11 @@ class ProgramRepository extends ServiceEntityRepository
     /**
      * @param string $query The query to search for (search terms)
      * @param bool $debug_build If debug builds should be included
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return int
      */
-  public function searchCount(string $query, bool $debug_build, $max_version = 0)
+  public function searchCount(string $query, bool $debug_build, $max_version = null)
   {
     $em = $this->getEntityManager();
     $metadata = $em->getClassMetadata('App\Entity\Tag')->getFieldNames();
@@ -779,7 +779,7 @@ class ProgramRepository extends ServiceEntityRepository
     $debug_where . '
           e.private = false) ' . $appendable_sql_string;
 
-    if ($max_version !== 0)
+    if ($max_version !== null)
     {
         $dql .= " AND e.language_version <= " . $max_version;
     }

@@ -47,7 +47,7 @@ class SearchController extends AbstractController
 
     $limit = intval($request->query->get('limit', $this->DEFAULT_LIMIT));
     $offset = intval($request->query->get('offset', $this->DEFAULT_OFFSET));
-    $max_version = $request->query->get('max_version', 0);
+    $max_version = $request->query->get('max_version', null);
 
     $programs = $program_manager->search($query, $limit, $offset, $max_version);
     // we can't count the results since we apply limit and offset.

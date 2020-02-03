@@ -711,12 +711,12 @@ class ApiFeatureContext extends BaseContext
         'description'         => $programs[$i]['description'],
         'views'               => $programs[$i]['views'],
         'downloads'           => $programs[$i]['downloads'],
+        'language_version'    => $programs[$i]['language_version'],
         'uploadtime'          => $programs[$i]['upload time'],
         'apk_status'          => $programs[$i]['apk_status'],
         'catrobatversionname' => $programs[$i]['version'],
         'directory_hash'      => $programs[$i]['directory_hash'],
         'filesize'            => @$programs[$i]['FileSize'],
-        'language_version'    => $programs[$i]['language_version'],
         'visible'             => isset($programs[$i]['visible']) ? $programs[$i]['visible'] == 'true' : true,
         'approved'            => (isset($programs[$i]['approved_by_user']) && $programs[$i]['approved_by_user'] == '')
           ? null : true,

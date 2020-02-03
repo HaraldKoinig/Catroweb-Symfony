@@ -604,11 +604,11 @@ class ProgramManager
      * @param string|null $flavor
      * @param int|null $limit
      * @param int $offset
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return Program[]
      */
-  public function getRecentPrograms($flavor, $limit = null, $offset = 0, $max_version = 0)
+  public function getRecentPrograms($flavor, $limit = null, $offset = 0, $max_version = null)
   {
     return $this->program_repository->getRecentPrograms(
       $this->app_request->isDebugBuildRequest(), $flavor, $limit, $offset, $max_version
@@ -619,11 +619,11 @@ class ProgramManager
      * @param string|null $flavor
      * @param int|null $limit
      * @param int $offset
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return Program[]
      */
-  public function getMostViewedPrograms($flavor, $limit = null, $offset = 0, $max_version = 0)
+  public function getMostViewedPrograms($flavor, $limit = null, $offset = 0, $max_version = null)
   {
     return $this->program_repository->getMostViewedPrograms(
       $this->app_request->isDebugBuildRequest(), $flavor, $limit, $offset, $max_version
@@ -634,11 +634,11 @@ class ProgramManager
    * @param string|null $flavor
    * @param int|null    $limit
    * @param int         $offset
-   * @param int         $max_version
+   * @param string      $max_version
    *
    * @return mixed
    */
-  public function getMostDownloadedPrograms($flavor, $limit = null, $offset = 0, $max_version = 0)
+  public function getMostDownloadedPrograms($flavor, $limit = null, $offset = 0, $max_version = null)
   {
     return $this->program_repository->getMostDownloadedPrograms(
       $this->app_request->isDebugBuildRequest(), $flavor, $limit, $offset, $max_version
@@ -663,22 +663,22 @@ class ProgramManager
      * @param string $query The query to search for (search terms)
      * @param int $limit
      * @param int $offset
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return array
      */
-  public function search(string $query, $limit = 10, $offset = 0, $max_version = 0)
+  public function search(string $query, $limit = 10, $offset = 0, $max_version = null)
   {
     return $this->program_repository->search($query, $this->app_request->isDebugBuildRequest(), $limit, $offset, $max_version);
   }
 
     /**
      * @param string $query The query to search for (search terms)
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return int
      */
-  public function searchCount(string $query, $max_version = 0)
+  public function searchCount(string $query, $max_version = null)
   {
     return $this->program_repository->searchCount($query, $this->app_request->isDebugBuildRequest(), $max_version);
   }

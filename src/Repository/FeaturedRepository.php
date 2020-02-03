@@ -27,11 +27,11 @@ class FeaturedRepository extends ServiceEntityRepository
      * @param int $limit
      * @param int $offset
      * @param bool $for_ios
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return mixed
      */
-  public function getFeaturedPrograms($flavor, $limit = 20, $offset = 0, $for_ios = false, $max_version = 0)
+  public function getFeaturedPrograms($flavor, $limit = 20, $offset = 0, $for_ios = false, $max_version = null)
   {
     $qb = $this->createQueryBuilder('e');
 
@@ -46,7 +46,7 @@ class FeaturedRepository extends ServiceEntityRepository
       ->setFirstResult($offset)
       ->setMaxResults($limit);
 
-    if ($max_version !== 0)
+    if ($max_version !== null)
     {
         $qb
             ->andWhere($qb
@@ -62,12 +62,12 @@ class FeaturedRepository extends ServiceEntityRepository
     /**
      * @param      $flavor
      * @param bool $for_ios
-     * @param int $max_version
+     * @param string $max_version
      *
      * @return mixed
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-  public function getFeaturedProgramCount($flavor, $for_ios = false, $max_version = 0)
+  public function getFeaturedProgramCount($flavor, $for_ios = false, $max_version = null)
   {
     $qb = $this->createQueryBuilder('e');
 
@@ -80,7 +80,7 @@ class FeaturedRepository extends ServiceEntityRepository
       ->setParameter('flavor', $flavor)
       ->setParameter('for_ios', $for_ios);
 
-    if ($max_version !== 0)
+    if ($max_version !== null)
     {
         $qb
             ->andWhere($qb

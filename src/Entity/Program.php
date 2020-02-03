@@ -127,9 +127,9 @@ class Program
   protected $last_modified_at;
 
   /**
-   * @ORM\Column(type="string", options={"default":0})
+   * @ORM\Column(type="string")
    */
-  protected $language_version = 0;
+  protected $language_version;
 
   /**
    * @ORM\Column(type="string", options={"default":""})
