@@ -5,8 +5,14 @@ namespace App\Admin;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
+use Sonata\AdminBundle\Form\FormMapper;
+use Sonata\AdminBundle\Form\Type\ModelType;
 use Sonata\AdminBundle\Route\RouteCollection;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
+/**
+ * Class LimitedUsersAdmin.
+ */
 class LimitedUsersAdmin extends AbstractAdmin
 {
   /**
@@ -26,13 +32,23 @@ class LimitedUsersAdmin extends AbstractAdmin
    */
   protected function configureListFields(ListMapper $listMapper): void
   {
-    $listMapper->addIdentifier('id')
-      ->add('username')
+    $listMapper->addIdentifier('username')
       ->add('email')
       ->add('limited', 'boolean', [
         'editable' => true,
       ])
+      ->remove('batch')
+      ->add('enabled', 'boolean', [
+        'editable' => true,
+      ])
     ;
+  }
+
+  protected function configureDefaultSortValues(array &$sortValues): void
+  {
+    $sortValues['_page'] = 1;
+    $sortValues['_sort_order'] = 'DESC';
+    $sortValues['_sort_by'] = 'limited';
   }
 
   /**
@@ -47,6 +63,7 @@ class LimitedUsersAdmin extends AbstractAdmin
     ])
       ->add('email')
       ->add('limited')
+      ->add('enabled')
     ;
   }
 
@@ -55,6 +72,41 @@ class LimitedUsersAdmin extends AbstractAdmin
     $collection->clearExcept([
       'list',
       'edit',
+      'delete',
     ]);
+  }
+
+  /**
+   * @param FormMapper $formMapper
+   *
+   * Fields to be shown on create/edit forms
+   */
+  protected function configureFormFields(FormMapper $formMapper): void
+  {
+    $formMapper
+      ->tab('User')
+      ->with('General', ['class' => 'col-md-6'])->end()
+      ->end()
+    ;
+
+    $formMapper
+      ->tab('User')
+      ->with('General')
+      ->add('username')
+      ->add('email')
+      ->add('plainPassword', TextType::class, [
+        'required' => (!$this->getSubject() || null === $this->getSubject()->getId()),
+      ])
+      ->add('enabled', null, ['required' => false])
+      ->add('limited')
+      ->end()
+      ->with('Groups')
+      ->add('groups', ModelType::class, [
+        'required' => false,
+        'expanded' => true,
+        'multiple' => true,
+      ])
+      ->end()
+    ;
   }
 }

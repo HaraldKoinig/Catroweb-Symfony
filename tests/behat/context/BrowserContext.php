@@ -403,4 +403,18 @@ class BrowserContext extends MinkContext implements KernelAwareContext
     var_dump($this->getSession()->getPage()->getContent());
     exit;
   }
+
+  /**
+   * @When /^I click the iCheckHelper which contains "([^"]*)" in his label$/
+   *
+   * @param mixed $arg1
+   */
+  public function iClickAs($arg1): void
+  {
+    $arg1 = trim($arg1);
+    $page = $this->getSession()->getPage();
+    $iCheckHelper = $page->find('xpath', "//*[contains(@id, '".$arg1."')]/div/div/label/div/ins");
+    Assert::assertNotNull($iCheckHelper);
+    $iCheckHelper->click();
+  }
 }

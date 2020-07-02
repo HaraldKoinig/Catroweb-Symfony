@@ -48,6 +48,8 @@ class UserDataFixtures
     $user->setEnabled(isset($config['enabled']) ? 'true' === $config['enabled'] : true);
     $user->setCountry($config['country'] ?? 'at');
     $user->addRole($config['role'] ?? 'ROLE_USER');
+    $user->setLimited($config['limited'] ?? 0);
+    $user->setEnabled($config['enabled'] ?? 1);
     $this->user_manager->updateUser($user, $andFlush);
 
     return $user;

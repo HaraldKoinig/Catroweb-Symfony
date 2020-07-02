@@ -9,9 +9,9 @@ Feature: Admin featured programs
 
     And there are users:
       | name      | password | token      | email               | id | enabled |
-      | Superman  | 123456   | cccccccccc | dev1@pocketcode.org |  1 | true    |
-      | Gregor    | 123456   | dddddddddd | dev2@pocketcode.org |  2 | false   |
-      | Frank Jr. | 123456   | qwertyuiop | dev3@pocketcode.org |  3 | true    |
+      | Superman  | 123456   | cccccccccc | dev1@pocketcode.org |  1 | 1       |
+      | Gregor    | 123456   | dddddddddd | dev2@pocketcode.org |  2 | 0       |
+      | Frank Jr. | 123456   | qwertyuiop | dev3@pocketcode.org |  3 | 1       |
 
     And the users are created at:
     | name      | created_at          |

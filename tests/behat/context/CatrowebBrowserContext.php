@@ -2991,6 +2991,21 @@ class CatrowebBrowserContext extends BrowserContext
     }
   }
 
+  /**
+   * @Then /^I should see the limited table:$/
+   */
+  public function iShouldSeeTheLimitedTable(TableNode $table)
+  {
+    $user_stats = $table->getHash();
+    foreach ($user_stats as $user_stat)
+    {
+      $this->assertSession()->pageTextContains($user_stat['username']);
+      $this->assertSession()->pageTextContains($user_stat['email']);
+      $this->assertSession()->pageTextContains($user_stat['limited']);
+      $this->assertSession()->pageTextContains($user_stat['enabled']);
+    }
+  }
+
   //--------------------------------------------------------------------------------------------------------------------
   //  User Agent
   //--------------------------------------------------------------------------------------------------------------------
